@@ -1,4 +1,4 @@
-import query from "../model/cases2.js";
+import query from "../model/cases.js";
 
 const status_code = ( status = "Error" ) =>
 {

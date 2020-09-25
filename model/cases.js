@@ -1,29 +1,49 @@
-import mariadb from "mariadb";
+import seq from "sequelize";
+const { Sequelize, Model, DataTypes } = seq;
 import setting from "../connection-setting.js";
 import status_message from "../utils/status-message.js";
 
 const requested_condition = ( id = NaN ) =>
 {
-    return !isNaN( id ) ? "SELECT * FROM cases WHERE cases.id = " + id : "SELECT * FROM cases LIMIT 5";
+    return isNaN( id ) ? { limit: 5 } : { where: { id } };
 };
 
-export default async( id = "" ) =>
+class Case extends Model {}
+
+const fetch_data = async ( id = NaN ) =>
 {
-    try {
-        const conn = await mariadb.createConnection( setting );
-        const data = await conn.query( requested_condition( parseInt( id, 10 ) ) , (err, rows) =>
-        {
-            return err ? err : rows;
-        });
-        const status = status_message( data );
-        return {
-            status,
-            data,
-        };
-    } catch (err) {
-        return {
-            status: "Error",
-            data: err,
-        };
-    }
+    const sequelize = new Sequelize( setting.database, setting.user, setting.password, {
+        host: setting.host,
+        dialect: "mariadb"
+    });
+    Case.init({
+        id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            primaryKey: true
+        },
+        name: {
+            type: DataTypes.CHAR,
+            allowNull: false
+        },
+        description: {
+            type: DataTypes.CHAR,
+            allowNull: false
+        },
+    },{
+        sequelize,
+        modelName: "cases",
+        timestamps: false
+    });
+    const data = await Case.findAll( requested_condition( id ) );
+    return data;
+};
+
+export default async ( id = "" ) =>
+{
+    const data = await fetch_data( parseInt( id, 10 ) );
+    return {
+        status: status_message(data),
+        data,
+    };
 };
