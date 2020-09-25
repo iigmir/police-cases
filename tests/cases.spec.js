@@ -5,12 +5,12 @@ import request from "supertest";
 describe( "Cases API", () => {
     it( "should have a response in collection", async () => {
         const res = await request( `127.0.0.1:5000` ).get( `/api/cases` );
-        assert.strictEqual(res.statusCode, 200);
+        assert.notDeepStrictEqual(res.statusCode, 500);
         assert.strictEqual(res.body.id, "");
     });
     it( "should have a response in member", async () => {
         const res = await request( `127.0.0.1:5000` ).get( `/api/cases/42` );
-        assert.strictEqual(res.statusCode, 200);
+        assert.notDeepStrictEqual(res.statusCode, 500);
         assert.deepStrictEqual(res.body.id, "42");
     });
 });
